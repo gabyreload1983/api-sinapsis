@@ -2,8 +2,9 @@ const { getFromUrbano, getProductPrice } = require("../utils/tools");
 
 exports.getWorkOrdersPending = async (req, res) => {
   try {
+    const { sector } = req.params;
     const query = `SELECT * FROM trabajos 
-                        WHERE  codiart = (".PC" || ".IMP") AND 
+                        WHERE  codiart = ".${sector}" AND 
                         estado = 21 AND 
                         codigo != "ANULADO"
                         ORDER BY prioridad DESC`;
@@ -56,7 +57,6 @@ exports.getWorkOrdersInProcess = async (req, res) => {
         }
       });
     });
-    console.log(workOrdersInProcess.length);
 
     res.status(200).send(workOrdersInProcess);
   } catch (error) {
@@ -115,7 +115,6 @@ exports.getWorkOrdersRepaired = async (req, res) => {
         }
       });
     });
-    console.log(workOrdersRepaired.length);
 
     res.status(200).send(workOrdersRepaired);
   } catch (error) {
@@ -173,8 +172,6 @@ exports.getWorkOrdersWithoutRepair = async (req, res) => {
         }
       });
     });
-
-    console.log(workOrdersWithoutRepair.length);
 
     res.status(200).send(workOrdersWithoutRepair);
   } catch (error) {
