@@ -184,13 +184,14 @@ exports.getWorkOrdersWithoutRepair = async (req, res) => {
 };
 
 exports.getMyWorkOrders = async (req, res) => {
-  const { codeTechnical } = req.params;
+  try {
+    const { codeTechnical } = req.params;
 
-  const queryMyWorkOrders = `SELECT * FROM trabajos
+    const queryMyWorkOrders = `SELECT * FROM trabajos
                        WHERE tecnico="${codeTechnical}" AND estado = 22 AND codigo != "ANULADO"
                       ORDER BY prioridad DESC`;
 
-  const queryProductsInWorkOrders = `SELECT *
+    const queryProductsInWorkOrders = `SELECT *
                                           FROM trrenglo 
                                           LEFT JOIN trabajos
                                           ON trrenglo.nrocompro = trabajos.nrocompro
@@ -199,8 +200,8 @@ exports.getMyWorkOrders = async (req, res) => {
                                           WHERE 
                                           trabajos.tecnico="${codeTechnical}" AND trabajos.estado = 22 AND trabajos.codigo != "ANULADO"
                                           ORDER BY trabajos.prioridad DESC`;
-  const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
-  try {
+    const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
+
     let productsInWorkOrders = await getFromUrbano(queryProductsInWorkOrders);
     const dollar = await getFromUrbano(queryDollar);
     let myWorkOrders = await getFromUrbano(queryMyWorkOrders);
@@ -235,11 +236,12 @@ exports.getMyWorkOrders = async (req, res) => {
 };
 
 exports.getWorkOrder = async (req, res) => {
-  const { numberWorkOrder } = req.params;
+  try {
+    const { numberWorkOrder, codeTechnical } = req.params;
 
-  const queryWorkOrder = `SELECT * FROM trabajos WHERE nrocompro = "ORX0011000${numberWorkOrder}"`;
+    const queryWorkOrder = `SELECT * FROM trabajos WHERE nrocompro = "ORX0011000${numberWorkOrder}"`;
 
-  const queryProductsInWorkOrders = `SELECT *
+    const queryProductsInWorkOrders = `SELECT *
                                           FROM trrenglo 
                                           LEFT JOIN trabajos
                                           ON trrenglo.nrocompro = trabajos.nrocompro
@@ -247,8 +249,8 @@ exports.getWorkOrder = async (req, res) => {
                                           ON trrenglo.codart= articulo.codigo
                                           WHERE 
                                           trabajos.nrocompro ="ORX0011000${numberWorkOrder}"`;
-  const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
-  try {
+    const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
+
     let productsInWorkOrders = await getFromUrbano(queryProductsInWorkOrders);
     const dollar = await getFromUrbano(queryDollar);
     let workOrder = await getFromUrbano(queryWorkOrder);
@@ -274,6 +276,53 @@ exports.getWorkOrder = async (req, res) => {
     });
 
     res.status(200).send(workOrder[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error.message);
+  }
+};
+
+exports.workOrderOutput = async (req, res) => {
+  try {
+    const { numberWorkOrder, codeOperator } = req.body;
+    const queryWorkOrder = `SELECT *FROM trabajos WHERE nrocompro = 'ORX0011000${numberWorkOrder}'`;
+    const queryWorkOrderOutput = `UPDATE trabajos SET ubicacion = 22 WHERE nrocompro = "ORX0011000${numberWorkOrder}"`;
+    const queryProductsInWorkOrder = `SELECT * FROM trrenglo 
+                                      INNER JOIN articulo ON trrenglo.codart= articulo.codigo
+                                      WHERE trrenglo.nrocompro = "ORX0011000${numberWorkOrder}"`;
+
+    const workOrder = await getFromUrbano(queryWorkOrder);
+    if (workOrder[0].estado === 23) {
+      const productsInOrder = await getFromUrbano(queryProductsInWorkOrder);
+      if (productsInOrder.length !== 0) {
+        const removeProductReservation = async (product) => {
+          let query = `UPDATE artstk01 SET reserd01 = reserd01 - 1 WHERE codigo = "${product.codart}"`;
+          return await getFromUrbano(query);
+        };
+
+        for (let product of productsInOrder) {
+          await removeProductReservation(product);
+        }
+      }
+
+      const result = await getFromUrbano(queryWorkOrderOutput);
+
+      if (result.affectedRows) {
+        console.log(
+          `workOrderOutput - ${numberWorkOrder} - operator ${codeOperator}`
+        );
+        res
+          .status(200)
+          .send({ success: `Salida de orden ${numberWorkOrder} exitosa` });
+      } else {
+        console.log(`workOrderOutput - ${numberWorkOrder} ERROR`);
+        res.status(200).send({
+          warning: `Error al dar salida a la orden ${numberWorkOrder}. Contactar al administrador del sistema.`,
+        });
+      }
+    } else {
+      res.status(200).send({ warning: "La orden de trabajo no esta cerrada" });
+    }
   } catch (error) {
     console.log(error);
     res.status(400).send(error.message);
