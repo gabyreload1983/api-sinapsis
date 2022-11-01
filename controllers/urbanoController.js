@@ -9,6 +9,11 @@ exports.getWorkOrdersPending = async (req, res) => {
                         codigo != "ANULADO"
                         ORDER BY prioridad DESC`;
     const workordersPending = await getFromUrbano(query);
+    workordersPending.forEach((workOrder) => {
+      workOrder.products = [];
+      workOrder.costo = Math.trunc(Number(workOrder.costo));
+      workOrder.total = workOrder.costo;
+    });
 
     res.status(200).send(workordersPending);
   } catch (error) {
