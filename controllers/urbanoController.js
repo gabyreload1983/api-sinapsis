@@ -262,19 +262,10 @@ exports.getWorkOrder = async (req, res) => {
     workOrder[0].total = workOrder[0].costo;
 
     productsInWorkOrders.forEach((product) => {
-      if (product.nrocompro === workOrder[0].nrocompro) {
-        let exists = workOrder[0].products.find(
-          (pr) => pr.codigo === product.codigo
-        );
-        if (!exists) {
-          product.finalPrice = getProductPrice(product, dollar);
-          workOrder[0].total += product.finalPrice;
-          workOrder[0].products.push({ ...product, quantity: 1 });
-        } else {
-          exists.quantity++;
-          workOrder[0].total += exists.finalPrice;
-        }
-      }
+      product.quantity = 1;
+      product.finalPrice = getProductPrice(product, dollar);
+      workOrder[0].total += product.finalPrice;
+      workOrder[0].products.push(product);
     });
 
     res.status(200).send(workOrder[0]);
