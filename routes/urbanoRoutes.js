@@ -8,7 +8,10 @@ router.get("/work-orders/repaired", urbano.getWorkOrdersRepaired);
 router.get("/work-orders/without-repair", urbano.getWorkOrdersWithoutRepair);
 router.get("/work-orders/technical/:codeTechnical", urbano.getMyWorkOrders);
 router.get("/work-orders/pending/:sector", urbano.getWorkOrdersPending);
+
 router.get("/work-order/:numberWorkOrder", urbano.getWorkOrder);
+
+router.get("/products/:search", urbano.getProducts);
 
 router.post("/workOrderOutput", urbano.workOrderOutput);
 
