@@ -243,7 +243,7 @@ exports.getWorkOrder = async (req, res) => {
 
     const queryWorkOrder = `SELECT * FROM trabajos WHERE nrocompro = "ORX0011000${numberWorkOrder}"`;
 
-    const queryProductsInWorkOrders = `SELECT *
+    const queryProductsInWorkOrders = `SELECT *, trrenglo.serie AS nroserie
                                           FROM trrenglo 
                                           LEFT JOIN trabajos
                                           ON trrenglo.nrocompro = trabajos.nrocompro
@@ -257,23 +257,28 @@ exports.getWorkOrder = async (req, res) => {
     const dollar = await getFromUrbano(queryDollar);
     let workOrder = await getFromUrbano(queryWorkOrder);
 
-    workOrder[0].products = [];
-    workOrder[0].costo = Math.trunc(Number(workOrder[0].costo));
-    workOrder[0].total = workOrder[0].costo;
+    if (workOrder.length) {
+      workOrder[0].products = [];
+      workOrder[0].costo = Math.trunc(Number(workOrder[0].costo));
+      workOrder[0].total = workOrder[0].costo;
 
-    productsInWorkOrders.forEach((product) => {
-      product.quantity = 1;
-      product.finalPrice = getProductPrice(product, dollar);
-      workOrder[0].total += product.finalPrice;
-      workOrder[0].products.push(product);
-    });
+      productsInWorkOrders.forEach((product) => {
+        product.quantity = 1;
+        product.finalPrice = getProductPrice(product, dollar);
+        workOrder[0].total += product.finalPrice;
+        workOrder[0].products.push(product);
+      });
 
-    res.status(200).send(workOrder[0]);
+      res.status(200).send(workOrder[0]);
+    } else {
+      res.status(200).send(false);
+    }
   } catch (error) {
     console.log(error);
     res.status(400).send(error.message);
   }
 };
+
 exports.getProducts = async (req, res) => {
   try {
     const { search } = req.params;
@@ -314,7 +319,75 @@ exports.getProducts = async (req, res) => {
   }
 };
 
+exports.getCustomers = async (req, res) => {
+  try {
+    const { search } = req.params;
+    console.log(search);
+    let customers;
+    const query = `SELECT * FROM clientes WHERE nombre LIKE '%${search}%'`;
+
+    customers = await getFromUrbano(query);
+
+    res.status(200).send(customers);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error.message);
+  }
+};
+
+exports.getHistoryCustomer = async (req, res) => {
+  try {
+    const { codeCustomer } = req.params;
+
+    let history;
+    const query = `SELECT * FROM trabajos WHERE codigo = '${codeCustomer}' ORDER BY ingresado DESC`;
+
+    history = await getFromUrbano(query);
+
+    const queryProductsInWorkOrders = `SELECT *
+                                          FROM trrenglo 
+                                          LEFT JOIN trabajos
+                                          ON trrenglo.nrocompro = trabajos.nrocompro
+                                          LEFT JOIN articulo 
+                                          ON trrenglo.codart= articulo.codigo
+                                          WHERE 
+                                          trabajos.codigo = "${codeCustomer}"`;
+    const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
+
+    let productsInWorkOrders = await getFromUrbano(queryProductsInWorkOrders);
+    const dollar = await getFromUrbano(queryDollar);
+
+    history.forEach((workOrder) => {
+      workOrder.products = [];
+      workOrder.costo = Math.trunc(Number(workOrder.costo));
+      workOrder.total = workOrder.costo;
+
+      productsInWorkOrders.forEach((product) => {
+        if (product.nrocompro === workOrder.nrocompro) {
+          let exists = workOrder.products.find(
+            (pr) => pr.codigo === product.codigo
+          );
+          if (!exists) {
+            product.finalPrice = getProductPrice(product, dollar);
+            workOrder.total += product.finalPrice;
+            workOrder.products.push({ ...product, quantity: 1 });
+          } else {
+            exists.quantity++;
+            workOrder.total += exists.finalPrice;
+          }
+        }
+      });
+    });
+
+    res.status(200).send(history);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error.message);
+  }
+};
+
 exports.workOrderOutput = async (req, res) => {
+  return true;
   try {
     const { numberWorkOrder, codeOperator } = req.body;
     const queryWorkOrder = `SELECT *FROM trabajos WHERE nrocompro = 'ORX0011000${numberWorkOrder}'`;
