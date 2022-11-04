@@ -13,6 +13,9 @@ router.get("/work-order/:numberWorkOrder", urbano.getWorkOrder);
 
 router.get("/products/:search", urbano.getProducts);
 
+router.get("/customers/:search", urbano.getCustomers);
+router.get("/history/:codeCustomer", urbano.getHistoryCustomer);
+
 router.post("/workOrderOutput", urbano.workOrderOutput);
 
 module.exports = router;
