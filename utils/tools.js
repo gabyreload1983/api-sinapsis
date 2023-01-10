@@ -1,4 +1,4 @@
-const connectionUrbano = require("../connections/urbanoDb");
+const connectionUrbano = require("../connections/dbUrbano");
 
 exports.getFromUrbano = (query) => {
   return new Promise((resolve, reject) => {
