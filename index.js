@@ -14,7 +14,7 @@ app.use((req, res, next) => {
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`EXPRESS: ${app.get("env")}`);
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 4444;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
 // routes
