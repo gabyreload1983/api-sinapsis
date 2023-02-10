@@ -1,4 +1,6 @@
 node_modules/
 .envDev
 docker-compose.yml
+.dockerignore
+Dockerfile
 start-app.sh
