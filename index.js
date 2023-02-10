@@ -1,9 +1,10 @@
-const express = require("express");
-const urbanoRoutes = require("./routes/urbanoRoutes");
+import express from "express";
+import workOrdersRouter from "./routes/workOrders.router.js";
 
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   console.log(req.path, req.method);
@@ -18,4 +19,4 @@ const port = process.env.PORT || 4444;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
 
 // routes
-app.use("/api", urbanoRoutes);
+app.use("/api/work-orders", workOrdersRouter);

@@ -1,6 +1,6 @@
-const connectionUrbano = require("../connections/dbUrbano");
+import { connectionUrbano } from "../connections/dbUrbano.js";
 
-exports.getFromUrbano = (query) => {
+const getFromUrbano = (query) => {
   return new Promise((resolve, reject) => {
     connectionUrbano.query(query, (error, result) => {
       if (error) {
@@ -12,8 +12,10 @@ exports.getFromUrbano = (query) => {
   });
 };
 
-exports.getProductPrice = (product, dollar) => {
+const getProductPrice = (product, dollar) => {
   let exchange = product.moneda === "D" ? dollar[0].valorlibre : 1;
   let tax = product.grabado === "1" ? 1.21 : 1.105;
   return Math.trunc(product.lista1 * tax * exchange);
 };
+
+export { getFromUrbano, getProductPrice };

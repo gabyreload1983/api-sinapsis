@@ -1,4 +1,4 @@
-const mysql = require("mysql");
+import mysql from "mysql";
 
 const connectionUrbano = mysql.createConnection({
   host: process.env.URBANO_HOST,
@@ -7,4 +7,4 @@ const connectionUrbano = mysql.createConnection({
   user: process.env.URBANO_USER,
 });
 
-module.exports = connectionUrbano;
+export { connectionUrbano };
