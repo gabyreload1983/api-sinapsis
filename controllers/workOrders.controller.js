@@ -2,6 +2,7 @@ import {
   getQuerySector,
   getQueryMyWorkOrders,
   getQueryWorkOrder,
+  getQueryProcess,
 } from "../utils/querys.js";
 import { getFromUrbano } from "../utils/tools.js";
 const sectors = ["pc", "imp"];
@@ -23,28 +24,29 @@ const technicals = [
 const getWorkOrders = async (req, res) => {
   try {
     const { status, sector, technical, numberWorkOrder } = req.query;
+    let querys = [];
 
     if (status === "pending" && sectors.includes(sector)) {
-      const query = getQuerySector(sector);
-      const workOrders = await getFromUrbano(query);
-      return res.status(200).send({ sector, workOrders });
+      querys = getQuerySector(sector);
     }
 
     if (status === "myWorkOrders" && technicals.includes(technical)) {
-      const querys = getQueryMyWorkOrders(technical);
-      const workOrders = await getFromUrbano(querys.workOrders);
-      const products = await getFromUrbano(querys.products);
-      return res.status(200).send({ workOrders, products });
+      querys = getQueryMyWorkOrders(technical);
     }
 
-    if (numberWorkOrder) {
-      const querys = getQueryWorkOrder(numberWorkOrder);
-      const workOrders = await getFromUrbano(querys.workOrders);
-      const products = await getFromUrbano(querys.products);
-      return res.status(200).send({ workOrders, products });
+    if (status === "process") {
+      querys = getQueryProcess();
     }
 
-    res.status(400).send({ status: "Error" });
+    if (numberWorkOrder?.length === 5) {
+      querys = getQueryWorkOrder(numberWorkOrder);
+    }
+
+    if (querys.length === 0) return res.status(400).send({ status: "Error" });
+
+    const workOrders = await getFromUrbano(querys.workOrders);
+    const products = await getFromUrbano(querys.products);
+    res.status(200).send({ status, workOrders, products });
   } catch (error) {
     console.log(error);
     res.status(400).send(error.message);
