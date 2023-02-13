@@ -39,9 +39,27 @@ const getQueryProcess = () => {
   };
 };
 
+const getQueryToDeliver = (quantity, time) => {
+  const dates = ["DAY", "MONTH", "YEAR"];
+  if (!dates.includes(time)) return [];
+  return {
+    workOrders: `
+    SELECT * FROM trabajos WHERE ingresado BETWEEN DATE_ADD(NOW(),INTERVAL - ${quantity} ${time}) AND NOW() AND
+    codigo != 'ANULADO' AND estado = 23  AND ubicacion = 21 ORDER BY ingresado DESC`,
+    products: `
+    SELECT trrenglo.nrocompro, trrenglo.ingreso, trrenglo.serie, articulo.codigo, articulo.descrip, articulo.lista1, articulo.moneda, articulo.grabado  
+    FROM trrenglo LEFT JOIN trabajos ON trrenglo.nrocompro = trabajos.nrocompro
+    LEFT JOIN articulo ON trrenglo.codart= articulo.codigo
+    WHERE trrenglo.ingreso BETWEEN DATE_ADD(NOW(),INTERVAL - ${quantity} ${time}) AND NOW() AND
+    trabajos.estado = 23 AND trabajos.ubicacion = 21 AND trabajos.codigo != 'ANULADO'
+    ORDER BY trabajos.prioridad DESC`,
+  };
+};
+
 export {
   getQuerySector,
   getQueryMyWorkOrders,
   getQueryWorkOrder,
   getQueryProcess,
+  getQueryToDeliver,
 };

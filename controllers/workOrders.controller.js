@@ -3,6 +3,7 @@ import {
   getQueryMyWorkOrders,
   getQueryWorkOrder,
   getQueryProcess,
+  getQueryToDeliver,
 } from "../utils/querys.js";
 import { getFromUrbano } from "../utils/tools.js";
 const sectors = ["pc", "imp"];
@@ -23,7 +24,8 @@ const technicals = [
 
 const getWorkOrders = async (req, res) => {
   try {
-    const { status, sector, technical, numberWorkOrder } = req.query;
+    const { status, sector, technical, numberWorkOrder, quantity, time } =
+      req.query;
     let querys = [];
 
     if (status === "pending" && sectors.includes(sector)) {
@@ -36,6 +38,10 @@ const getWorkOrders = async (req, res) => {
 
     if (status === "process") {
       querys = getQueryProcess();
+    }
+
+    if (status === "toDeliver" && quantity && time) {
+      querys = getQueryToDeliver(Number(quantity), time);
     }
 
     if (numberWorkOrder?.length === 5) {
