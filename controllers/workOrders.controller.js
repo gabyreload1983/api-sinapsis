@@ -29,8 +29,14 @@ const technicals = [
 
 const getWorkOrders = async (req, res) => {
   try {
-    const { status, sector, technical, numberWorkOrder, quantity, time } =
-      req.query;
+    const {
+      status,
+      sector,
+      technical,
+      numberWorkOrder,
+      quantity = 1,
+      time = "YEAR",
+    } = req.query;
     let querys = [];
 
     if (status === "pending" && sectors.includes(sector)) {
