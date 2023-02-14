@@ -41,7 +41,7 @@ const getQueryProcess = () => {
 
 const getQueryToDeliver = (quantity, time) => {
   const dates = ["DAY", "MONTH", "YEAR"];
-  if (!dates.includes(time)) return [];
+  if (!dates.includes(time) || quantity <= 0) return [];
   return {
     workOrders: `
     SELECT * FROM trabajos WHERE ingresado BETWEEN DATE_ADD(NOW(),INTERVAL - ${quantity} ${time}) AND NOW() AND
@@ -56,10 +56,13 @@ const getQueryToDeliver = (quantity, time) => {
   };
 };
 
+const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
+
 export {
   getQuerySector,
   getQueryMyWorkOrders,
   getQueryWorkOrder,
   getQueryProcess,
   getQueryToDeliver,
+  queryDollar,
 };

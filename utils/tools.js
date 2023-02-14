@@ -18,4 +18,29 @@ const getProductPrice = (product, dollar) => {
   return Math.trunc(product.lista1 * tax * exchange);
 };
 
-export { getFromUrbano, getProductPrice };
+const formatWorkOrders = (workOrders, products, dollar) => {
+  workOrders.forEach((workOrder) => {
+    workOrder.products = [];
+    workOrder.costo = Math.trunc(Number(workOrder.costo));
+    workOrder.total = workOrder.costo;
+
+    products.forEach((product) => {
+      if (product.nrocompro === workOrder.nrocompro) {
+        let exists = workOrder.products.find(
+          (pr) => pr.codigo === product.codigo
+        );
+        if (!exists) {
+          product.finalPrice = getProductPrice(product, dollar);
+          workOrder.total += product.finalPrice;
+          workOrder.products.push({ ...product, quantity: 1 });
+        } else {
+          exists.quantity++;
+          workOrder.total += exists.finalPrice;
+        }
+      }
+    });
+  });
+  return workOrders;
+};
+
+export { getFromUrbano, getProductPrice, formatWorkOrders };

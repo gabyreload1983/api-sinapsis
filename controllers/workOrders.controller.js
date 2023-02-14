@@ -4,8 +4,9 @@ import {
   getQueryWorkOrder,
   getQueryProcess,
   getQueryToDeliver,
+  queryDollar,
 } from "../utils/querys.js";
-import { getFromUrbano } from "../utils/tools.js";
+import { formatWorkOrders, getFromUrbano } from "../utils/tools.js";
 const sectors = ["pc", "imp"];
 const technicals = [
   "SERG",
@@ -40,7 +41,7 @@ const getWorkOrders = async (req, res) => {
       querys = getQueryProcess();
     }
 
-    if (status === "toDeliver" && quantity && time) {
+    if (status === "toDeliver" && Number(quantity) && time) {
       querys = getQueryToDeliver(Number(quantity), time);
     }
 
@@ -52,7 +53,9 @@ const getWorkOrders = async (req, res) => {
 
     const workOrders = await getFromUrbano(querys.workOrders);
     const products = await getFromUrbano(querys.products);
-    res.status(200).send({ status, workOrders, products });
+    const dollar = await getFromUrbano(queryDollar);
+    const workOrdersFormat = formatWorkOrders(workOrders, products, dollar);
+    res.status(200).send({ status, workOrders: workOrdersFormat });
   } catch (error) {
     console.log(error);
     res.status(400).send(error.message);
