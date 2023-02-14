@@ -58,6 +58,13 @@ const getQueryToDeliver = (quantity, time) => {
 
 const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
 
+const getUpdateWorkOrder = (workOrder) => {
+  return `
+  UPDATE trabajos 
+  SET diagnostico = '${workOrder.diagnostico}', 
+  costo = ${workOrder.costo}, pendiente = ${workOrder.costo} WHERE nrocompro = '${workOrder.nrocompro}'`;
+};
+
 export {
   getQuerySector,
   getQueryMyWorkOrders,
@@ -65,4 +72,5 @@ export {
   getQueryProcess,
   getQueryToDeliver,
   queryDollar,
+  getUpdateWorkOrder,
 };

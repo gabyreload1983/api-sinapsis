@@ -5,6 +5,7 @@ import {
   getQueryProcess,
   getQueryToDeliver,
   queryDollar,
+  getUpdateWorkOrder,
 } from "../utils/querys.js";
 import { formatWorkOrders, getFromUrbano } from "../utils/tools.js";
 const sectors = ["pc", "imp"];
@@ -62,4 +63,19 @@ const getWorkOrders = async (req, res) => {
   }
 };
 
-export { getWorkOrders };
+const updateWorkOrder = async (req, res) => {
+  try {
+    const { workOrderUpdate } = req.body;
+
+    const query = getUpdateWorkOrder(workOrderUpdate);
+    const result = await getFromUrbano(query);
+    if (result.affectedRows) return res.send({ status: "success" });
+
+    res.status(400).send({ status: "Error" });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send(error.message);
+  }
+};
+
+export { getWorkOrders, updateWorkOrder };
