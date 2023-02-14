@@ -5,7 +5,10 @@ import {
   getQueryProcess,
   getQueryToDeliver,
   queryDollar,
-  getUpdateWorkOrder,
+  getQueryTakeWorkOrder,
+  getQueryUpdateWorkOrder,
+  getQueryCloseWorkOrder,
+  getQueryFreeWorkOrder,
 } from "../utils/querys.js";
 import { formatWorkOrders, getFromUrbano } from "../utils/tools.js";
 const sectors = ["pc", "imp"];
@@ -65,13 +68,31 @@ const getWorkOrders = async (req, res) => {
 
 const updateWorkOrder = async (req, res) => {
   try {
-    const { workOrderUpdate } = req.body;
+    let query = [];
+    const { action } = req.query;
+    const { workOrder } = req.body;
 
-    const query = getUpdateWorkOrder(workOrderUpdate);
+    if (action === "take" && workOrder) {
+      query = getQueryTakeWorkOrder(workOrder);
+    }
+
+    if (action === "update" && workOrder) {
+      query = getQueryUpdateWorkOrder(workOrder);
+    }
+
+    if (action === "close" && workOrder) {
+      query = getQueryCloseWorkOrder(workOrder);
+    }
+
+    if (action === "free" && workOrder) {
+      query = getQueryFreeWorkOrder(workOrder);
+    }
+
+    if (query.length === 0) return res.status(400).send({ status: "Error" });
+
     const result = await getFromUrbano(query);
-    if (result.affectedRows) return res.send({ status: "success" });
-
-    res.status(400).send({ status: "Error" });
+    if (result.affectedRows) return res.send({ status: "success", action });
+    res.status(400).send({ status: "Error al actualizar" });
   } catch (error) {
     console.log(error);
     res.status(400).send(error.message);

@@ -58,12 +58,19 @@ const getQueryToDeliver = (quantity, time) => {
 
 const queryDollar = `SELECT * FROM cotiza  WHERE codigo =  "BD"`;
 
-const getUpdateWorkOrder = (workOrder) => {
-  return `
+const getQueryTakeWorkOrder = (workOrder) => `
+  UPDATE trabajos SET estado=22, tecnico='${workOrder.tecnico}' WHERE nrocompro='${workOrder.nrocompro}'`;
+
+const getQueryUpdateWorkOrder = (workOrder) => `
   UPDATE trabajos 
   SET diagnostico = '${workOrder.diagnostico}', 
   costo = ${workOrder.costo}, pendiente = ${workOrder.costo} WHERE nrocompro = '${workOrder.nrocompro}'`;
-};
+
+const getQueryCloseWorkOrder = (workOrder) => `
+  UPDATE trabajos SET estado = 23, diag = ${workOrder.diag}, diagnosticado = NOW() WHERE nrocompro = '${workOrder.nrocompro}'`;
+
+const getQueryFreeWorkOrder = (workOrder) =>
+  `UPDATE trabajos SET estado = 21, diag = 21, ubicacion = 21, tecnico = '' WHERE nrocompro = '${workOrder.nrocompro}'`;
 
 export {
   getQuerySector,
@@ -72,5 +79,8 @@ export {
   getQueryProcess,
   getQueryToDeliver,
   queryDollar,
-  getUpdateWorkOrder,
+  getQueryTakeWorkOrder,
+  getQueryUpdateWorkOrder,
+  getQueryCloseWorkOrder,
+  getQueryFreeWorkOrder,
 };
