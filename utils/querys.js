@@ -19,12 +19,12 @@ const getQueryMyWorkOrders = (technical) => {
 
 const getQueryWorkOrder = (numberWorkOrder) => {
   return {
-    workOrders: `SELECT * FROM trabajos WHERE nrocompro = 'ORX0011000${numberWorkOrder}'`,
+    workOrders: `SELECT * FROM trabajos WHERE nrocompro = '${numberWorkOrder}'`,
     products: `
     SELECT trrenglo.nrocompro, trrenglo.serie, articulo.codigo, articulo.descrip, articulo.lista1, articulo.moneda, articulo.grabado  
     FROM trrenglo LEFT JOIN trabajos ON trrenglo.nrocompro = trabajos.nrocompro
     LEFT JOIN articulo ON trrenglo.codart= articulo.codigo
-    WHERE trabajos.nrocompro ='ORX0011000${numberWorkOrder}'`,
+    WHERE trabajos.nrocompro ='${numberWorkOrder}'`,
   };
 };
 
@@ -72,6 +72,17 @@ const getQueryCloseWorkOrder = (workOrder) => `
 const getQueryFreeWorkOrder = (workOrder) =>
   `UPDATE trabajos SET estado = 21, diag = 21, ubicacion = 21, tecnico = '' WHERE nrocompro = '${workOrder.nrocompro}'`;
 
+const getQueryOutWorkOrder = (workOrder) => {
+  return {
+    out: `UPDATE trabajos SET ubicacion = 22 WHERE nrocompro = '${workOrder.nrocompro}'`,
+    products: `SELECT * FROM trrenglo WHERE nrocompro = '${workOrder.nrocompro}'`,
+  };
+};
+
+const getQueryRemoveReserve = (product) => {
+  return `UPDATE artstk01 SET reserd01 = reserd01 -1 WHERE codigo = '${product.codart}'`;
+};
+
 export {
   getQuerySector,
   getQueryMyWorkOrders,
@@ -83,4 +94,6 @@ export {
   getQueryUpdateWorkOrder,
   getQueryCloseWorkOrder,
   getQueryFreeWorkOrder,
+  getQueryOutWorkOrder,
+  getQueryRemoveReserve,
 };

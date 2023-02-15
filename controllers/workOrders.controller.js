@@ -9,6 +9,8 @@ import {
   getQueryUpdateWorkOrder,
   getQueryCloseWorkOrder,
   getQueryFreeWorkOrder,
+  getQueryOutWorkOrder,
+  getQueryRemoveReserve,
 } from "../utils/querys.js";
 import { formatWorkOrders, getFromUrbano } from "../utils/tools.js";
 const sectors = ["pc", "imp"];
@@ -55,7 +57,7 @@ const getWorkOrders = async (req, res) => {
       querys = getQueryToDeliver(Number(quantity), time);
     }
 
-    if (numberWorkOrder?.length === 5) {
+    if (numberWorkOrder?.length === 15) {
       querys = getQueryWorkOrder(numberWorkOrder);
     }
 
@@ -74,7 +76,7 @@ const getWorkOrders = async (req, res) => {
 
 const updateWorkOrder = async (req, res) => {
   try {
-    let query = [];
+    let query = "";
     const { action } = req.query;
     const { workOrder } = req.body;
 
@@ -94,11 +96,31 @@ const updateWorkOrder = async (req, res) => {
       query = getQueryFreeWorkOrder(workOrder);
     }
 
+    if (action === "out" && workOrder) {
+      const queryWorkOrder = getQueryWorkOrder(workOrder.nrocompro);
+      const w = await getFromUrbano(queryWorkOrder.workOrders);
+      if (w[0].estado !== 23)
+        return res.status(404).send({ Error: "La orden no esta terminada!" });
+      query = getQueryOutWorkOrder(workOrder);
+      const products = await getFromUrbano(query.products);
+      if (products.length) {
+        products.forEach(async (p) => {
+          const queryRemoveReserve = getQueryRemoveReserve(p);
+          const result = await getFromUrbano(queryRemoveReserve);
+          if (!result.affectedRows)
+            return res.status(400).send({
+              Error: "Error al quitar reserva, contactar al programador!",
+            });
+        });
+      }
+      query = query.out;
+    }
+
     if (query.length === 0) return res.status(400).send({ status: "Error" });
 
     const result = await getFromUrbano(query);
     if (result.affectedRows) return res.send({ status: "success", action });
-    res.status(400).send({ status: "Error al actualizar" });
+    res.status(400).send({ status: "Error al actualizar", action });
   } catch (error) {
     console.log(error);
     res.status(400).send(error.message);
