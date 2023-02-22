@@ -3,4 +3,4 @@ node_modules/
 docker-compose.yml
 .dockerignore
 Dockerfile
-start-app.sh
+package-lock.json
