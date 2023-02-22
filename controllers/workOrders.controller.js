@@ -120,7 +120,9 @@ const updateWorkOrder = async (req, res) => {
 
     const result = await getFromUrbano(query);
     if (result.affectedRows) return res.send({ status: "success", action });
-    res.status(400).send({ status: "Error al actualizar", action });
+    res
+      .status(400)
+      .send({ status: "error", action, message: "Error al actualizar!" });
   } catch (error) {
     console.log(error);
     res.status(400).send(error.message);
