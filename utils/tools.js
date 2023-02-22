@@ -26,17 +26,9 @@ const formatWorkOrders = (workOrders, products, dollar) => {
 
     products.forEach((product) => {
       if (product.nrocompro === workOrder.nrocompro) {
-        let exists = workOrder.products.find(
-          (pr) => pr.codigo === product.codigo
-        );
-        if (!exists) {
-          product.finalPrice = getProductPrice(product, dollar);
-          workOrder.total += product.finalPrice;
-          workOrder.products.push({ ...product, quantity: 1 });
-        } else {
-          exists.quantity++;
-          workOrder.total += exists.finalPrice;
-        }
+        product.finalPrice = getProductPrice(product, dollar);
+        workOrder.total += product.finalPrice;
+        workOrder.products.push(product);
       }
     });
   });
